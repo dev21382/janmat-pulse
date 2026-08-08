@@ -4,7 +4,8 @@ A full rebuild of the "Public Opinion Aggregator" concept from [Dev Mann's portf
 live sentiment tracking on Indian political topics, a forecast trained on that real data, and a
 RAG pipeline for asking questions across the 2024 Lok Sabha party manifestos.
 
-**Live app**: deployed on Render (see repo description for the current link).
+**Live app**: [janmat-pulse.onrender.com](https://janmat-pulse.onrender.com) — free-tier hosting, so the
+first request after idle time can take ~50s to wake up.
 
 ## What's actually live vs. documented as a limitation
 
