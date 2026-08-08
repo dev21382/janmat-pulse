@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #0f1120;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #423a6a;
+  color: #f5f4ff;
+}
+
+.glass {
+  background: rgba(242, 243, 250, 0.035);
+  border: 1px solid rgba(242, 243, 250, 0.1);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(242, 243, 250, 0.15);
+  border-radius: 8px;
+}
