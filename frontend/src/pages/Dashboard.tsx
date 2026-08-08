@@ -45,8 +45,8 @@ export default function Dashboard() {
         </p>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Public Opinion Dashboard</h1>
         <p className="text-sm text-[#9ea3bb] max-w-2xl">
-          Sentiment aggregated from public Reddit discussion and Google News coverage per topic, with a small
-          per-topic LSTM forecasting the next 3 days from the real accumulated history. X/Twitter is not
+          Sentiment aggregated from public Reddit discussion and Google News coverage per topic, with a
+          per-topic forecast for the next 3 days trained on the real accumulated history. X/Twitter is not
           included — its API is paid-only, so it's omitted rather than faked.
         </p>
       </header>

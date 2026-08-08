@@ -55,7 +55,7 @@ export default function SentimentChart({ data, hue }: { data: ForecastResponse; 
           <Line
             type="monotone"
             dataKey="forecast"
-            name="Forecast (LSTM)"
+            name="Forecast"
             stroke={hue}
             strokeWidth={2}
             strokeDasharray="5 4"

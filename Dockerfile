@@ -8,8 +8,6 @@ RUN npm run build
 FROM python:3.11-slim AS backend
 WORKDIR /app
 
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 

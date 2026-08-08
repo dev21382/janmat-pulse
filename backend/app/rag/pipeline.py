@@ -1,9 +1,7 @@
 import logging
 
-import numpy as np
-
 from app.rag.chunk import chunk_text
-from app.rag.embeddings import embed_texts
+from app.rag.embeddings import fit_vectorizer
 from app.rag.generator import generate_answer, generative_available
 from app.rag.index_store import build_and_save, index_exists
 from app.rag.ingest import available_manifesto_texts, ingest_all_manifestos
@@ -31,8 +29,10 @@ def build_index(force: bool = False) -> dict:
             c["title"] = source["title"]
         all_chunks.extend(party_chunks)
 
-    vectors = np.array(embed_texts([c["text"] for c in all_chunks]))
-    build_and_save(all_chunks, vectors)
+    texts_to_index = [c["text"] for c in all_chunks]
+    vectorizer = fit_vectorizer(texts_to_index)
+    matrix = vectorizer.transform(texts_to_index)
+    build_and_save(all_chunks, vectorizer, matrix)
     invalidate_cache()
 
     return {

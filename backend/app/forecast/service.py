@@ -8,20 +8,24 @@ MIN_LSTM_POINTS days), falls back to a simple linear-trend extrapolation and
 labels the result "naive" rather than pretending an LSTM was involved. This
 is an honest reflection of a cold-started system: forecast quality genuinely
 improves the longer the deployed instance runs and accrues real days of data.
+
+torch is imported lazily, inside _lstm_forecast, and only when ENABLE_LSTM
+is set. On memory-constrained hosting (free tiers around 512MB) importing
+torch at all can exceed the ceiling, so it stays opt-in there; the linear
+trend fallback is always available with zero extra dependencies.
 """
 import datetime as dt
 import logging
+import os
 
 import numpy as np
-import torch
-import torch.nn as nn
 
 from app.db.database import cursor
-from app.forecast.lstm_model import SentimentLSTM
 from app.sentiment.aggregate import get_daily_series
 
 log = logging.getLogger("forecast.service")
 
+ENABLE_LSTM = os.environ.get("ENABLE_LSTM", "false").lower() == "true"
 MIN_LSTM_POINTS = 8
 WINDOW = 5
 HORIZON_DAYS = 3
@@ -49,6 +53,11 @@ def _build_windows(series: np.ndarray, window: int):
 
 
 def _lstm_forecast(values: list[float], horizon: int) -> list[float]:
+    import torch
+    import torch.nn as nn
+
+    from app.forecast.lstm_model import SentimentLSTM
+
     arr = np.array(values, dtype=np.float32)
     mean, std = arr.mean(), arr.std() if arr.std() > 1e-6 else 1.0
     norm = (arr - mean) / std
@@ -90,7 +99,7 @@ def forecast_topic(topic_id: str, horizon: int = HORIZON_DAYS) -> dict:
     if len(values) < 2:
         return {"topic_id": topic_id, "method": "insufficient_data", "history": series, "forecast": []}
 
-    method = "lstm" if len(values) >= MIN_LSTM_POINTS else "naive_trend"
+    method = "lstm" if (ENABLE_LSTM and len(values) >= MIN_LSTM_POINTS) else "naive_trend"
     try:
         preds = _lstm_forecast(values, horizon) if method == "lstm" else _naive_forecast(values, horizon)
     except Exception as exc:

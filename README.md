@@ -1,20 +1,10 @@
----
-title: Janmat Pulse
-emoji: 🗳️
-colorFrom: purple
-colorTo: blue
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # Janmat Pulse — Public Opinion & Manifesto Intelligence
 
 A full rebuild of the "Public Opinion Aggregator" concept from [Dev Mann's portfolio](https://dev21382.github.io/portfolio/):
-live sentiment tracking on Indian political topics, an LSTM forecast trained on that real
-data, and a RAG pipeline for asking questions across the 2024 Lok Sabha party manifestos.
+live sentiment tracking on Indian political topics, a forecast trained on that real data, and a
+RAG pipeline for asking questions across the 2024 Lok Sabha party manifestos.
 
-**Live app**: deployed on Hugging Face Spaces (see repo/Space description for the current link).
+**Live app**: deployed on Render (see repo description for the current link).
 
 ## What's actually live vs. documented as a limitation
 
@@ -27,15 +17,15 @@ the limitations are stated plainly rather than papered over.
 | News ingestion | Real, via Google News RSS. No API key needed. |
 | X / Twitter | **Not included.** X's API is paid-only; rather than fake it, it's omitted. |
 | Sentiment scoring | Real, VADER (rule-based, no external calls). |
-| LSTM forecast | Real, a small PyTorch LSTM trained per-topic on the actual accumulated daily sentiment history. With fewer than 8 days of real history it falls back to a labeled linear-trend estimate instead of pretending an LSTM produced it. **Forecast quality improves the longer the deployed instance runs.** |
-| Manifesto RAG — retrieval | Real. Official BJP/INC/CPI(M) 2024 manifesto PDFs, chunked, embedded with `sentence-transformers/all-MiniLM-L6-v2`, indexed with FAISS. |
+| Forecast | A linear-trend estimate by default. The codebase also has a small PyTorch LSTM (`ENABLE_LSTM=true`) trained per-topic on the real accumulated daily sentiment history — disabled by default because torch's RSS footprint exceeds the 512MB ceiling on free-tier hosting (confirmed by an OOM kill in production). Enable it if you deploy somewhere with ~1GB+ RAM. **Forecast quality improves the longer the deployed instance runs and accrues more real days of data**, regardless of which method is active. |
+| Manifesto RAG — retrieval | Real. Official BJP/INC/CPI(M) 2024 manifesto PDFs, chunked, and ranked with TF-IDF + cosine similarity (scikit-learn) — chosen over transformer embeddings for the same memory-budget reason as the forecaster. |
 | Manifesto RAG — generation | Real when a free Groq API key is configured (see below); otherwise the app serves ranked, cited excerpts directly with no generation step — still fully functional, just without prose synthesis. |
 
 ## Architecture
 
 ```
 frontend/   React + Vite + TypeScript + Tailwind — Dashboard + Manifesto Chat
-backend/    FastAPI — ingestion, sentiment, LSTM forecast, RAG pipeline, REST API
+backend/    FastAPI — ingestion, sentiment, forecast, RAG pipeline, REST API
 Dockerfile  Multi-stage build: builds the frontend, serves it as static files from FastAPI
 ```
 
@@ -48,7 +38,6 @@ API, so there's nothing to configure across origins.
 # backend
 cd backend
 pip install -r requirements.txt
-pip install torch --index-url https://download.pytorch.org/whl/cpu
 uvicorn app.main:app --reload --port 8000
 
 # frontend (separate terminal)
@@ -59,6 +48,13 @@ npm run dev
 
 The Vite dev server proxies `/api` to `localhost:8000`. Open `http://localhost:5173`.
 
+To enable the PyTorch LSTM forecaster instead of the linear-trend default (needs more RAM):
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+ENABLE_LSTM=true uvicorn app.main:app --reload --port 8000
+```
+
 ## Enabling generative RAG answers
 
 By default the manifesto chat works with zero configuration in retrieval-only mode: it returns
@@ -67,8 +63,8 @@ answers instead:
 
 1. Get a free API key at [console.groq.com](https://console.groq.com) (no credit card required,
    14,400 requests/day on the free tier).
-2. Set it as `GROQ_API_KEY` in your deployment platform's secrets (Hugging Face Space → Settings
-   → Repository secrets). Never commit it to git — see `.env.example`.
+2. Set it as `GROQ_API_KEY` in your deployment platform's secrets (Render → Environment). Never
+   commit it to git — see `.env.example`.
 
 ## Data sources
 
