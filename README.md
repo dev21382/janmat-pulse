@@ -1,7 +1,6 @@
 # Janmat Pulse — Public Opinion & Manifesto Intelligence
 
-A full rebuild of the "Public Opinion Aggregator" concept from [Dev Mann's portfolio](https://dev21382.github.io/portfolio/):
-live sentiment tracking on Indian political topics, a forecast trained on that real data, and a
+A full rebuild of the "Public Opinion Aggregator" live sentiment tracking on Indian political topics, a forecast trained on that real data, and a
 RAG pipeline for asking questions across the 2024 Lok Sabha party manifestos.
 
 **Live app**: [janmat-pulse.onrender.com](https://janmat-pulse.onrender.com) — free-tier hosting, so the
